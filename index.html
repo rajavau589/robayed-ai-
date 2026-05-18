@@ -89,7 +89,7 @@ async function sendMessage(){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat",
+        model: "google/gemma-2-9b-it:free",
         messages: [
           {
             role: "user",
@@ -103,7 +103,7 @@ async function sendMessage(){
 
     console.log(data);
 
-    const reply = data.choices[0].message.content;
+    const reply = data.choices?.[0]?.message?.content || "No reply";;
 
     chat.innerHTML += `<div class="bot"><b>AI:</b> ${reply}</div>`;
 
