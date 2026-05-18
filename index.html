@@ -1,94 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Robayed AI</title>
+  <title>AI Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
+  <style>
+    body{
+      font-family: Arial;
+      background:#111;
+      color:white;
+      margin:0;
+      padding:0;
+    }
 
-body{
-  margin:0;
-  padding:0;
-  background:#0f0f0f;
-  font-family:Arial;
-  color:white;
-}
+    .chat-box{
+      height:80vh;
+      overflow:auto;
+      padding:10px;
+    }
 
-.header{
-  background:#1e1e1e;
-  padding:15px;
-  text-align:center;
-  font-size:24px;
-  font-weight:bold;
-  color:#00ff99;
-}
+    .input-box{
+      display:flex;
+      padding:10px;
+      background:#222;
+    }
 
-#chat{
-  height:75vh;
-  overflow-y:auto;
-  padding:15px;
-}
+    input{
+      flex:1;
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      font-size:16px;
+    }
 
-.user{
-  background:#00ff99;
-  color:black;
-  padding:10px;
-  border-radius:10px;
-  margin:10px 0;
-  width:fit-content;
-  max-width:80%;
-  margin-left:auto;
-}
+    button{
+      margin-left:10px;
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      background:#00ff99;
+      font-weight:bold;
+    }
 
-.bot{
-  background:#222;
-  color:white;
-  padding:10px;
-  border-radius:10px;
-  margin:10px 0;
-  width:fit-content;
-  max-width:80%;
-}
+    .user{
+      color:#00ff99;
+      margin:10px 0;
+    }
 
-.input-area{
-  display:flex;
-  padding:10px;
-  background:#1e1e1e;
-}
-
-input{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  outline:none;
-  font-size:16px;
-}
-
-button{
-  margin-left:10px;
-  padding:12px 20px;
-  border:none;
-  border-radius:10px;
-  background:#00ff99;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-</style>
+    .bot{
+      color:#00ccff;
+      margin:10px 0;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="header">
-  Robayed AI
-</div>
+<div class="chat-box" id="chat"></div>
 
-<div id="chat"></div>
-
-<div class="input-area">
-  <input type="text" id="msg" placeholder="Type a message...">
+<div class="input-box">
+  <input type="text" id="msg" placeholder="Type message...">
   <button onclick="sendMessage()">Send</button>
 </div>
 
@@ -99,65 +70,38 @@ async function sendMessage(){
   const input = document.getElementById("msg");
   const chat = document.getElementById("chat");
 
-  const message = input.value.trim();
+  const message = input.value;
 
-  if(!message) return;
+  if(message === "") return;
 
-  chat.innerHTML += `
-    <div class="user">
-      ${message}
-    </div>
-  `;
+  chat.innerHTML += `<div class="user"><b>You:</b> ${message}</div>`;
 
   input.value = "";
 
-  try{
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer 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",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "deepseek/deepseek-chat",
+      messages: [
+        {
+          role: "user",
+          content: message
+        }
+      ]
+    })
+  });
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions",{
-      method:"POST",
-      headers:{
-        "Authorization":"Bearer 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",
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        model:"google/gemma-2-9b-it:free",
-        messages:[
-          {
-            role:"user",
-            content:message
-          }
-        ]
-      })
-    });
+  const data = await response.json();
 
-    const data = await response.json();
+  const reply = data.choices[0].message.content;
 
-    console.log(data);
+  chat.innerHTML += `<div class="bot"><b>AI:</b> ${reply}</div>`;
 
-    let reply = "No reply";
-
-    if(data.choices && data.choices.length > 0){
-      reply = data.choices[0].message.content;
-    }
-
-    chat.innerHTML += `
-      <div class="bot">
-        ${reply}
-      </div>
-    `;
-
-    chat.scrollTop = chat.scrollHeight;
-
-  }catch(error){
-
-    console.log(error);
-
-    chat.innerHTML += `
-      <div class="bot">
-        Error loading AI response
-      </div>
-    `;
-  }
+  chat.scrollTop = chat.scrollHeight;
 }
 
 </script>
